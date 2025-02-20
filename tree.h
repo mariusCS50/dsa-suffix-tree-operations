@@ -5,7 +5,7 @@
 
 #define MAX_CHILDREN 27
 
-// Structura care reprezintă arborele de sufixe
+// Structure representing the suffix tree
 typedef struct node {
     int level;
     int num_children;
@@ -13,25 +13,25 @@ typedef struct node {
     struct node *children[MAX_CHILDREN];
 } Node, *Tree;
 
-// Structura care reprezintă o listă simplu înlănțuită
+// Structure representing a singly linked list
 typedef struct cell {
     Tree node;
     struct cell *next;
 } TCell, *TList;
 
-// Structura care reprezintă coada
+// Structure representing the queue
 typedef struct queue {
     int len;
     TList head, tail;
 } Queue, *TQueue;
 
-// Funcțiile ce țin de coadă
+// Functions related to the queue
 TQueue create_queue();
 void push(TQueue q, Tree node);
 Tree pop(TQueue *q);
 void destroy_queue(TQueue *q);
 
-// Funcțiile ce țin de arborele de sufixe
+// Functions related to the suffix tree
 Tree create_node(int level, int num_children, char info);
 void destroy_tree(Tree *tree);
 

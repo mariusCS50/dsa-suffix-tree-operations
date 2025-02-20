@@ -4,7 +4,7 @@
 #define MAX_CHILDREN 27
 #define FIRST_INDEX 96
 
-// Crează și inițializează coada
+// Creates and initializes the queue
 TQueue create_queue() {
     TQueue q = (TQueue)malloc(sizeof(Queue));
     if (!q) return NULL;
@@ -15,7 +15,7 @@ TQueue create_queue() {
     return q;
 }
 
-// Adaugă un nod la sfârșitul cozii
+// Adds a node to the end of the queue
 void push(TQueue q, Tree node) {
     TList aux = (TList)malloc(sizeof(TCell));
     aux->node = node;
@@ -31,7 +31,7 @@ void push(TQueue q, Tree node) {
     }
 }
 
-// Extrage primul nod din coadă
+// Extracts the first node from the queue
 Tree pop(TQueue *q) {
     TList aux = (*q)->head;
     Tree node = aux->node;
@@ -48,12 +48,12 @@ Tree pop(TQueue *q) {
     return node;
 }
 
-// Eliberează memoria ocupată de coadă
+// Frees the memory used by the queue
 void destroy_queue(TQueue *q) {
     free(*q);
 }
 
-// Crează și inițializează un nod din arbore
+// Creates and initializes a node in the tree
 Tree create_node(int level, int num_children, char info) {
     Tree node = (Tree)malloc(sizeof(Node));
     if (!node) return NULL;
@@ -70,7 +70,7 @@ Tree create_node(int level, int num_children, char info) {
     return node;
 }
 
-// Distruge arborele
+// Destroys the tree
 void destroy_tree(Tree *tree) {
     Tree node = *tree;
     for (int i = 0; i < MAX_CHILDREN; i++) {
@@ -82,7 +82,7 @@ void destroy_tree(Tree *tree) {
     free(node);
 }
 
-// Returnează index-ul caracterului curent în lista de copii
+// Returns the index of the current character in the children list
 int get_index(char current_char) {
     if (current_char == '$') {
         return 0;
@@ -91,7 +91,7 @@ int get_index(char current_char) {
     }
 }
 
-// Adaugă toate sufixele unui cuvând în arbore
+// Adds all suffixes of a word to the tree
 void add_every_suffix(Tree tree, char *word) {
     word = strtok(word, "\n");
     strcat(word, "$");
@@ -100,10 +100,10 @@ void add_every_suffix(Tree tree, char *word) {
     int len = (int)strlen(word);
 
     for (int i = 0; i < len; i++) {
-        char *suffix = word + i;  // Extrage sufixul curent
+        char *suffix = word + i;  // Extracts the current suffix
         tree = root;
 
-        // Adaugă fiecare caracter în cascadă în arbore
+        // Adds each character consecutively in the tree
         for (; *suffix != '\0'; suffix++) {
             int idx = get_index(*suffix);
 
@@ -116,16 +116,16 @@ void add_every_suffix(Tree tree, char *word) {
     }
 }
 
-// Afișează structura arborelui pe nivele
+// Displays the tree structure by levels
 void show_tree(FILE* fout, Tree root) {
     TQueue bfs_queue = create_queue();
     int check_newline = 0;
     push(bfs_queue, root);
 
     while (bfs_queue->head) {
-        Tree node = pop(&bfs_queue);  // Extrage nodul curent
+        Tree node = pop(&bfs_queue);  // Extracts the current node
 
-        // Adaugă descendenții nodului curent în coadă
+        // Adds the descendants of the current node to the queue
         for (int i = 0; i < MAX_CHILDREN; i++) {
             if (node->children[i] != NULL) {
                 push(bfs_queue, node->children[i]);
@@ -136,11 +136,11 @@ void show_tree(FILE* fout, Tree root) {
             continue;
         }
 
-        // Afișează informația nodului curent
+        // Displays the current node's info
         fprintf(fout, "%s ", node->info);
         check_newline--;
 
-        if (check_newline == 0) {  // Trece vizual pe noul nivel
+        if (check_newline == 0) {  // Visually moves to the new level
             fprintf(fout, "\n");
             check_newline = bfs_queue->len;
         }
@@ -150,8 +150,8 @@ void show_tree(FILE* fout, Tree root) {
 }
 
 /*
-    Afișează statisticile căutate pentru arbore (numărul de noduri frunză,
-    numărul de sufixe de lungime k, numărul maxim de descendenți ale unui nod)
+    Displays the sought statistics for the tree (number of leaf nodes,
+    number of suffixes of length k, maximum number of descendants of a node)
 */
 void get_tree_stats(FILE* fout, Tree root, int k) {
     TQueue bfs_queue = create_queue();
@@ -159,16 +159,16 @@ void get_tree_stats(FILE* fout, Tree root, int k) {
     push(bfs_queue, root);
 
     while (bfs_queue->head) {
-        Tree node = pop(&bfs_queue);  // Extrage nodul curent
+        Tree node = pop(&bfs_queue);  // Extracts the current node
 
-        // Actualizează statisticile căutate
+        // Updates the sought statistics
         if (node->num_children > max_descendants) {
             max_descendants = node->num_children;
         }
         leaf_count += (node->num_children == 0);
         k_len_suffix += (node->children[0] && node->level == k);
 
-        // Adaugă descendenții nodului curent în coadă
+        // Adds the descendants of the current node to the queue
         for (int i = 0; i < MAX_CHILDREN; i++) {
             if (node->children[i] != NULL) {
                 push(bfs_queue, node->children[i]);
@@ -176,7 +176,7 @@ void get_tree_stats(FILE* fout, Tree root, int k) {
         }
     }
 
-    // Afișează statisticile căutate
+    // Displays the sought statistics
     fprintf(fout, "%d\n", leaf_count);
     fprintf(fout, "%d\n", k_len_suffix);
     fprintf(fout, "%d\n", max_descendants);
@@ -184,7 +184,7 @@ void get_tree_stats(FILE* fout, Tree root, int k) {
     destroy_queue(&bfs_queue);
 }
 
-// Verifică existența unui sufix în arbore
+// Checks for the existence of a suffix in the tree
 int search_suffix(Tree tree, char *suffix) {
     suffix = strtok(suffix, "\n");
 
@@ -199,7 +199,7 @@ int search_suffix(Tree tree, char *suffix) {
     return (tree->children[0] != NULL);
 }
 
-// Realizează compresia arborelui curent
+// Performs compression of the current tree
 void compress_tree(Tree *tree) {
     Tree node = *tree;
 
@@ -207,19 +207,19 @@ void compress_tree(Tree *tree) {
         if (node->children[i] != NULL) {
             compress_tree(&(node->children[i]));
 
-            // Dacă nodul are un singur fiu, se poate face compresia datelor
+            // If the node has a single child, data compression can be performed
             if (node->num_children == 1 && i != 0) {
                 Tree temp = node->children[i];
 
-                // Actualizează informația nodului curent cu versiunea compactă
+                // Updates the current node's info with the compacted version
                 node->info = realloc(node->info, strlen(temp->info) + 2);
                 memcpy(node->info + 1, temp->info, strlen(temp->info) + 1);
 
-                // Modifică descendenții nodului curent cu cei ai fiului
+                // Replaces the current node's descendants with the child's descendants
                 memcpy(node->children, temp->children, sizeof(temp->children));
                 node->num_children = temp->num_children;
 
-                // Distruge nodul fiu
+                // Destroys the child node
                 free(temp->info);
                 free(temp);
             }

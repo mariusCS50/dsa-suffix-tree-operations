@@ -3,7 +3,7 @@
 
 #define MAX_BUFFER_SIZE 256
 
-// Funția care realizează cerința 1
+// Function that implements requirement 1
 void build_and_show(FILE* fin, FILE* fout) {
     Tree tree = create_node(0, 0, '0');
     int num_words = 0;
@@ -19,7 +19,7 @@ void build_and_show(FILE* fin, FILE* fout) {
     destroy_tree(&tree);
 }
 
-// Funția care realizează cerința 2
+// Function that implements requirement 2
 void build_and_get_stats(FILE* fin, FILE* fout, int k) {
     Tree tree = create_node(0, 0, '0');
     int num_words = 0;
@@ -35,7 +35,7 @@ void build_and_get_stats(FILE* fin, FILE* fout, int k) {
     destroy_tree(&tree);
 }
 
-// Funția care realizează cerința 3
+// Function that implements requirement 3
 void build_and_search_suffix(FILE* fin, FILE* fout) {
     Tree tree = create_node(0, 0, '0');
     int num_words = 0, num_suffix = 0;
@@ -56,7 +56,7 @@ void build_and_search_suffix(FILE* fin, FILE* fout) {
     destroy_tree(&tree);
 }
 
-// Funția care realizează cerința 4
+// Function that implements requirement 4
 void build_and_compress(FILE* fin, FILE* fout) {
     Tree tree = create_node(0, 0, '0');
     int num_words = 0;
@@ -76,13 +76,13 @@ void build_and_compress(FILE* fin, FILE* fout) {
 int main(int argc, char *argv[]) {
     (void)argc;
 
-    int task_number = *(argv[1] + 2) - '0';  // Identificarea numărului cerinței
+    int task_number = *(argv[1] + 2) - '0';  // Identifying the requirement number
 
-    // Deschiderea fișierelor pentru I/O
+    // Opening files for I/O
     FILE* fin = fopen(argv[2 + (task_number == 2)], "rt");
     FILE* fout = fopen(argv[3 + (task_number == 2)], "wt");
 
-    // Executarea cerinței
+    // Executing the requirement
     switch (task_number) {
         case 1: build_and_show(fin, fout); break;
         case 2: build_and_get_stats(fin, fout, atoi(argv[2])); break;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         case 4: build_and_compress(fin, fout); break;
     }
 
-    // Închiderea fișierelor pentru I/O
+    // Closing files for I/O
     fclose(fin);
     fclose(fout);
 
