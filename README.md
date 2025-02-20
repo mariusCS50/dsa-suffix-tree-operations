@@ -1,97 +1,118 @@
-# TEMA 2 - SDA
+# DSA Suffix Tree Operations
 
-A fost o temă foarte interesantă, care mi-a readus aminte de lucrul cu diferite tipuri de arbori, în cazul nostru a trie-ului și arborelui de sufixe.
+This project implements various operations on suffix trees (tries) in C as part of a university assignment. The program builds a suffix tree from input words and performs one of the following tasks:
 
-Tema a mers mult mai rapid ca prima, dat fiind că, în liceu când mă pregăteam de olimpiade, am învâțat cum să lucrez cu unele structuri de arbori și să fac algoritmii de parcurgere în adâncime și lățime, pe care i-am folosit și în temă.
+- **Display Tree**: Print the tree structure level by level.
+- **Tree Statistics**: Compute statistics such as the number of leaf nodes, the count of suffixes with a specified length, and the maximum number of descendants of any node.
+- **Suffix Search**: Check whether given substrings appear as valid suffixes in the tree.
+- **Tree Compression**: Compress the tree by merging nodes in chains.
 
-Am mers pe aceleași principii de simplitate a codului, am încercat să-l fac cât mai lizibil și ușor de înțeles, am folosit la această temă și comentarii inline pe alocuri pentru mici precizări.
+## Features
 
-Logica pe care am folosit-o la rezolvarea taskurilor este destul de simplă, o să explic mai în detaliu la paragrafele respective fiecărui fișier, însă am și niște comentarii prin cod care mai explică mersul rezolvării.
+- **Suffix Tree Construction**
+  Every suffix of each input word is added to the tree. For example, for "banana" the construction includes:
+  `banana$ → anana$ → nana$ → ana$ → na$ → a$ → $`
 
-Nu am folosit bucăți de cod de pe net, de la lab-uri sau generate de inteligență artificială, codul este scris în totalitate de mine.
+- **Viewing the Tree Structure**
+  The tree is displayed level by level using a breadth-first search implemented with a custom queue.
 
-Codul funcționează perfect, exact cum era de așteptat, punctajul obținut local este maxim, inclusiv punctajul bonus pentru valgrind.
+- **Statistics Calculation**
+  Traversal of the tree computes:
+  - The number of leaf nodes.
+  - The number of suffixes of a specified length (using the terminal character '$').
+  - The maximum number of children (descendants) of any node.
 
-Pentru a corecta erorile de conding style am folosit clang-tidy și cpplint.
+- **Suffix Existence Check**
+  The program can search for a suffix in the tree and report whether it is valid.
 
-## tree.h
+- **Tree Compression**
+  The tree can be compressed by merging nodes that have a single child (except those marking the end of a suffix), thereby reducing its size.
 
-La această temă am ales să folosesc doar un header file, deoarece funcțiile care execută operațiile aferente unor taskuri necesită utilizarea unei cozi. Am încercat să fac coada într-un header separat la început, însă coada are nevoie de structure de arbore, iar funcțiile pentru structura de arbore au nevoie de coadă, deci se obține un fel de loop de dependențe.
+## Files Overview
 
-În header file sunt prezente definițiile structurilor pentru coadă și arbore, împreună cu funcțiile de prelucrare ale cozii, respectiv, ale arborelui.
+- **[tema2.c](tema2.c)**
+  Contains the `main()` function, processes command-line arguments, and selects the appropriate task:
+  - `-c1` for displaying the tree.
+  - `-c2` for computing tree statistics (with additional parameter `k`).
+  - `-c3` for suffix search.
+  - `-c4` for tree compression.
 
-În structura arborelui am ales să mai adaug următoarele elemente pentru a-mi ușura cu mult executarea taskurilor cerute:
-```c
-int level;  // nivelul nodului curent
-int num_children;  // numărul de copii al nodului curent
- char *info;  // informația din nodul curent
+- **[tree.c](tree.c)** and **[tree.h](tree.h)**
+  Implement the suffix tree and queue data structures along with functions to:
+  - Create, destroy, and display the tree.
+  - Add every suffix for each word.
+  - Compute tree statistics.
+  - Search for a suffix.
+  - Compress the tree.
+
+- **[Makefile](Makefile)**
+  A simple Makefile is provided to build the project and clean up build artifacts.
+
+- **[checker.sh](checker.sh)**
+  A shell script to run tests (provided in the `tests/` directory) and perform Valgrind checks for memory leaks.
+
+- **tests/**
+  Contains input and reference output files for the different tasks (cerinta1 through cerinta4).
+
+## Building the Project
+
+Use the provided Makefile to build the project:
+
+```bash
+make build   # Builds the executable 'tema2'
+make clean   # Removes build artifacts
 ```
 
-## tree.c
+## Running the Program
 
-Aici sunt toate declarațiile funcțiilor din tree.h, începând cu cele care țin de coadă, după care urmează cele ce țin de arbore.
+The program supports four commands corresponding to its functionalities. After building, run the executable with the following formats:
 
-Aici am mai făcut o funcție get_index() pentru a-mi ușura conversia dintre caracterul curent al unui sufix și poziția sa în lista de copii.
+1. **Display Tree (Cerinta 1)**
+   ```bash
+   ./tema2 -c1 input_file output_file
+   ```
 
-Funcțiile ce țin de coadă sunt destul de intuitive, realizeză operațiile clasice de creare / distrugere și inserare / extragere, singura diferență este că în loc de un int ca informație avem un nod.
+2. **Tree Statistics (Cerinta 2)**
+   Note that an additional integer (`k`) is required (the number appears at a different position in the argument list):
+   ```bash
+   ./tema2 -c2 k input_file output_file
+   ```
 
-În ceea ce ține de arbore, avem funcțiile clasice:
-1) funcția de alocare a unui element create_node()
-2) funcția care la finalul codului eliberează memoria ocupată de arbore destroy_tree()
+3. **Suffix Search (Cerinta 3)**
+   ```bash
+   ./tema2 -c3 input_file output_file
+   ```
 
-Funția add_every_suffix() adaugă caracterul '$' la sfârșitul cuvântului, ca în condiția temei, după care iterează prin toate sufixele cuvântului respectiv incrementând adresa sufixului cu iteratorul la fiecare pas, obținându-se de exemplu:
+4. **Tree Compression (Cerinta 4)**
+   ```bash
+   ./tema2 -c4 input_file output_file
+   ```
 
-banana$ -> anana$ -> nana$ -> ana$ -> na$ -> a$ -> $
-
-Caracterele fiecărui sufix sunt adăugate pe rănd în arbore în cascadă, adică în jos unul după celălalt.
-
-Funcția show_tree() afișează conținului arborelui pe nivele folosind algoritmul de parcurgere în lățime cu coada de noduri. La început se adaugă rădăcina în coadă, apoi atâta timp cât coada nu e goală, extrage nodul curent și îi adaugă copiii în coadă. Pentru fiecare nod se afișează informația acestuia, adică caracterul, iar variabile check_newline este folosită pentru a verifica dacă am ajuns la sfârșitul unui nivel. În caz afirmativ, se trece în rând nu, iar check_newline devine lungimea curentă a cozii, care reprezintă și nivelul curent.
-
-De exemplu fie orice arbore, rădăcina are 4 fii, deci primul nivel are 4 noduri, check_newline va fi 4. Următoarele 4 parcurgeri vor insera în coadă fiii celor 4 noduri, iar când check_newline va fi 0 în coadă nu vor mai fi cele 4 noduri, ci toate nodurile de pe nivelul 2, mergând pe aceeași logică, mereu când se termină nivelul n, în coadă vor fi exact toate nodurile pentru nivelul n + 1.
-
-Funcția get_tree_stats() calculează numărul de noduri frunză,
-numărul de sufixe de lungime k și numărul maxim de descendenți ale unui nod tot printr-o parcurgere în lățime, verificând la fiecare pas dacă numărul de fii ai nodului curent este mai mare ca max_descendants, dacă nodul curent este o frunză sau dacă nivelul curent este egal cu k și există node->children[0], care corespunde cu sfărșitul unui sufix.
-
-Funcția search_suffix este intuitivă, parcurgem căte un caracter pe rând, dacă caracterul curent nu are nodul respectiv alocat atunci nu există sufixul în arbore. Dacă am parcurs toate caracterele verificăm dacă nodul curent este un sfârșit de sufix, în caz contrar returnăm 0.
-
-De exemplu pentru șirul de noduri b-a-n-a-n-a-$, cuvântul bana există pe această ramură din arbore, însă nu este un sufix valid.
-
-Funcția compress_tree() am decis să fac compresia unui arbore deja existend, fiindcă generarea directă a arborelui compresat era mult mai dificilă.
-
-Aici am folosit parcurgerea în adâncime, fiindcă este mult mai ușor de compresat arborele de jos în sus pe câte o ramură, decât la o parcurgere în lățime unde compresia trebuia făcută de sus în jos și în paralel.
-
-Dacă nodul curent are doar un fiu care nu e nod terminal, atunci se concatenează informația fiului la nodul curent și se copie lista și numărul de descendenți ale fiului la nodul părinte, obținându-se un rezultat satisfăcător.
-
-De exemplu ramura b - a - n - a - n - a - $ din temă, parcurgerea în adâncime va ajunge la ultimul nod, și urcânduse în sus va tot comprima ramura:
-
-b - a - n - a - na - $
-b - a - n - ana - $
-b - a - nana - $
-b - anana - $
-banana - $
-
-## tema2.c
-
-Aici a rămas doar combinarea tuturor funcționalităților implementate în tree.c.
-
-Identific din parametrii lui *argv[] numărul cerinței curente, după deschid fișierele transmise tot ca parametri prin *argv[], iar dacă numărul cerinței este 2, fișierele sutn cu o poziție mai la dreapta în *argv[] din cauza parametrului adițional k necesar în taskul 2.
-
-După identificarea taskului și deschiderea fișierelor execut funcția respectivă cerinței, după care închid fișierele de I/O.
-
-Toate cele 4 funcții aferente celor 4 cerințe sunt scurte și ușor de înțeles, am încercat diferite variate până am ajuns la această structură, și au cam aceleași 3 părți principale:
-1) Aloca arborele și citește numărul de cuvinte
-2) Citește cuvintele și construiește arborele
-3) Execută funcțiile pentru executarea cerinței și distruge arborele
-
-La început am vrut să fac un array de pointeri la funcții și să execut direct funcția după numărul taskului, însă codul nu era atât de clar, de aceea am ales variata cu switch care e mult mai clară și nu foarte sofisticată.
-
-## Precizare!!!
-
-Am auzit de la unii colegi că trebuie să folosim standarde din c99, și că la for-uri trebuie sp scrim ceva de genul:
-```c
-int i;
-for (i = 0; i < n; i++);
+For example, to display the suffix tree built from [tests/input/cerinta1/test0.in](tests/input/cerinta1/test0.in) and write the output to [tests/output/cerinta1/test.out](tests/output/cerinta1/test.out), run:
+```bash
+./tema2 -c1 tests/input/cerinta1/test0.in tests/output/cerinta1/test.out
 ```
-Chestia asta este obligatorie? Să vă spun sincer nu îmi place cum arată codul așa, parcă mă dezgustă puțin, cred că variata de variabilă declarată direct în for este mult mai frumoasă.
 
-O să las for-urile din temă cu variabila declarată înăuntru la for, puteți să îmi lăsați un mesaj pe moodle la temă dacă trebuie numaidecât de utilizat acea sintaxă ca să știu pe viitor.
+## Implementation Details
+
+- **Suffix Tree Construction & Traversal**
+  - The function [`add_every_suffix`](tree.c) generates all suffixes by appending a terminal character (`$`) to each word.
+  - [`show_tree`](tree.c) uses a breadth-first search with a custom queue (implemented via the types defined in [`tree.h`](tree.h)) to print tree levels.
+
+- **Statistics Calculation**
+  - The function [`get_tree_stats`](tree.c) traverses the tree to compute the number of leaf nodes, count the suffixes of a given length (`k`), and determine the maximum value of [`num_children`](tree.h) in any node.
+
+- **Suffix Search & Tree Compression**
+  - [`search_suffix`](tree.c) iteratively checks for the presence of each character in the suffix.
+  - [`compress_tree`](tree.c) recursively compresses the tree by merging nodes with a single child, reallocating the node information to reflect the concatenated labels.
+
+- **Memory Management**
+  - Dynamic memory allocation is used throughout for nodes and the queue. Proper cleanup is ensured in [`destroy_tree`](tree.c) and [`destroy_queue`](tree.c).
+
+## Testing
+
+A comprehensive set of test cases is provided in the [`tests`](tests) directory, organized by task (cerinta1, cerinta2, cerinta3, cerinta4). Run the provided [`checker.sh`](checker.sh) script to execute tests and check for memory leaks using Valgrind.
+
+---
+
+This repository contains all source code and test files needed to build, run, and validate the suffix tree operations implemented for this assignment.
